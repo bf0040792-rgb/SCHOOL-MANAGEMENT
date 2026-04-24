@@ -49,7 +49,7 @@
         <p>This registration link is invalid or expired. Please ask your school to share a valid link.</p>
     </div>
 
-    <!-- Closed Screen (New feature) -->
+    <!-- Closed Screen -->
     <div class="form-container screen-box" id="closed-screen">
         <i class="fas fa-door-closed" style="color: #e67e22;"></i>
         <h2>Admissions Closed</h2>
@@ -60,12 +60,12 @@
     <div class="form-container screen-box" id="success-screen">
         <i class="fas fa-check-circle" style="color: #18bc9c;"></i>
         <h2>Registration Successful!</h2>
-        <p>Your details have been submitted. Your admission is pending Chairman's approval.</p>
+        <p>Your details have been submitted. Your admission is pending Chairman's approval. Please remember your mobile number and password to login to the app later.</p>
     </div>
 
     <!-- Main Form -->
     <div class="form-container" id="main-form" style="display: none;">
-        <div class="school-header">
+        <div class="school-header" id="school-header-bg">
             <img src="" id="schoolLogo" class="school-logo" style="display: none;">
             <div class="school-name" id="schoolName">Loading...</div>
             <div class="form-title">Student Admission Form</div>
@@ -76,9 +76,16 @@
             <div class="form-group"><label>Student Full Name</label><input type="text" id="st_name" placeholder="Enter student's name"></div>
             <div class="form-group"><label>Father's Name</label><input type="text" id="st_father" placeholder="Enter father's name"></div>
             <div class="form-group"><label>Mother's Name</label><input type="text" id="st_mother" placeholder="Enter mother's name"></div>
+            
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed #cbd5e1;">
+                <p style="font-size:12px; color:#e74c3c; font-weight:bold; margin-bottom:10px;">APP LOGIN CREDENTIALS</p>
+                <div class="form-group"><label>Family Mobile Number</label><input type="text" id="st_mobile" placeholder="This will be your App Login ID"></div>
+                <div class="form-group"><label>Create App Password</label><input type="password" id="st_app_pass" placeholder="Create a password for the app"></div>
+            </div>
+
             <div style="display:flex; gap:15px;">
-                <div class="form-group" style="flex:1;"><label>Class</label><input type="text" id="st_class"></div>
-                <div class="form-group" style="flex:1;"><label>Roll No</label><input type="text" id="st_roll"></div>
+                <div class="form-group" style="flex:1;"><label>Class (e.g. 10th)</label><input type="text" id="st_class"></div>
+                <div class="form-group" style="flex:1;"><label>Roll No (Optional)</label><input type="text" id="st_roll"></div>
             </div>
             <div class="form-group"><label>Aadhaar Number</label><input type="text" id="st_aadhaar"></div>
             <div class="form-group"><label>Full Address</label><input type="text" id="st_address"></div>
@@ -110,7 +117,6 @@
         function showLoader(text) { document.getElementById("loading-text").innerText = text; overlay.style.display = "flex"; }
         function hideLoader() { overlay.style.display = "none"; }
 
-        // 1. Verify Link & Check Admission Status
         async function verifySchool() {
             showLoader("Loading School Details...");
             if (!targetSchoolId) { hideLoader(); document.getElementById("error-screen").style.display = "block"; return; }
@@ -119,14 +125,15 @@
                 if (schoolDoc.exists()) {
                     const schoolData = schoolDoc.data();
                     
-                    // NEW CHECK: Is admission open?
                     if(schoolData.admissionOpen === false) {
-                        hideLoader();
-                        document.getElementById("closed-screen").style.display = "block";
-                        return;
+                        hideLoader(); document.getElementById("closed-screen").style.display = "block"; return;
                     }
 
                     document.getElementById("schoolName").innerText = schoolData.schoolName;
+                    
+                    if(schoolData.themeColor) {
+                        document.getElementById("school-header-bg").style.background = schoolData.themeColor;
+                    }
                     if(schoolData.logoUrl) {
                         document.getElementById("schoolLogo").src = schoolData.logoUrl;
                         document.getElementById("schoolLogo").style.display = "inline-block";
@@ -137,24 +144,24 @@
         }
         verifySchool();
 
-        // 2. Base64 Upload
         const convertToBase64 = (file) => new Promise((resolve, reject) => {
             const reader = new FileReader(); reader.readAsDataURL(file);
             reader.onload = () => resolve(reader.result); reader.onerror = (e) => reject(e);
         });
 
-        // 3. Submit
         window.submitForm = async () => {
             const name = document.getElementById("st_name").value.trim();
             const father = document.getElementById("st_father").value.trim();
             const mother = document.getElementById("st_mother").value.trim();
+            const mobile = document.getElementById("st_mobile").value.trim();
+            const appPass = document.getElementById("st_app_pass").value.trim();
             const cls = document.getElementById("st_class").value.trim();
             const roll = document.getElementById("st_roll").value.trim();
             const aadhaar = document.getElementById("st_aadhaar").value.trim();
             const address = document.getElementById("st_address").value.trim();
             const photoFile = document.getElementById("st_photo").files[0];
 
-            if(!name || !father || !mother || !cls || !aadhaar || !address) return alert("Please fill all mandatory fields!");
+            if(!name || !father || !mobile || !appPass || !cls || !address) return alert("Please fill all mandatory fields (Name, Father, Mobile, Password, Class, Address)!");
 
             showLoader("Uploading Photo...");
             let photoUrl = "https://via.placeholder.com/100";
@@ -173,7 +180,7 @@
             showLoader("Submitting Form...");
             try {
                 await setDoc(doc(collection(db, "students")), {
-                    schoolId: targetSchoolId, name, fatherName: father, motherName: mother, class: cls, roll, aadhaar, address, photoUrl,
+                    schoolId: targetSchoolId, name, fatherName: father, motherName: mother, mobile, appPassword: appPass, class: cls, roll, aadhaar, address, photoUrl,
                     status: "Pending", createdAt: serverTimestamp()
                 });
                 hideLoader(); document.getElementById("main-form").style.display = "none"; document.getElementById("success-screen").style.display = "block";
@@ -181,4 +188,4 @@
         };
     </script>
 </body>
-</html>                    
+</html>
