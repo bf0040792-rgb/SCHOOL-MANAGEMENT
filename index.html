@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Admission Form</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; }
+        body { background-color: #f0f4f8; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 20px; }
+        
+        .form-container { background: white; width: 100%; max-width: 500px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; margin-top: 20px; }
+        
+        .school-header { background: #2c3e50; color: white; padding: 30px 20px; text-align: center; }
+        .school-logo { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #18bc9c; margin-bottom: 10px; background: white; }
+        .school-name { font-size: 22px; font-weight: bold; margin-bottom: 5px; }
+        .form-title { font-size: 14px; color: #18bc9c; text-transform: uppercase; letter-spacing: 1px; }
+
+        .form-body { padding: 30px 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #34495e; font-weight: 600; font-size: 14px; }
+        .form-group input { width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-size: 15px; color: #2d3748; transition: 0.3s; }
+        .form-group input:focus { border-color: #18bc9c; box-shadow: 0 0 0 3px rgba(24, 188, 156, 0.1); }
+        
+        .submit-btn { width: 100%; padding: 15px; background: #18bc9c; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 6px rgba(24, 188, 156, 0.2); }
+        .submit-btn:hover { background: #128f76; }
+
+        #loading-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #18bc9c; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        #error-screen, #success-screen { display: none; text-align: center; padding: 40px 20px; }
+        #error-screen i { font-size: 50px; color: #e74c3c; margin-bottom: 20px; }
+        #success-screen i { font-size: 50px; color: #18bc9c; margin-bottom: 20px; }
+        h2 { color: #2c3e50; margin-bottom: 10px; }
+        p { color: #7f8c8d; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <h3 id="loading-text" style="color:#2c3e50;">Loading School Details...</h3>
+    </div>
+
+    <!-- Error Screen (If link is invalid) -->
+    <div class="form-container" id="error-screen">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h2>Invalid Link</h2>
+        <p>This registration link is invalid or expired. Please ask your school to share a valid link.</p>
+    </div>
+
+    <!-- Success Screen (After form submission) -->
+    <div class="form-container" id="success-screen">
+        <i class="fas fa-check-circle"></i>
+        <h2>Registration Successful!</h2>
+        <p>Your details have been submitted. Your admission is pending Chairman's approval.</p>
+    </div>
+
+    <!-- Main Registration Form -->
+    <div class="form-container" id="main-form" style="display: none;">
+        <div class="school-header">
+            <img src="" id="schoolLogo" class="school-logo" style="display: none;">
+            <div class="school-name" id="schoolName">Loading...</div>
+            <div class="form-title">Student Admission Form</div>
+        </div>
+
+        <div class="form-body">
+            <div class="form-group">
+                <label>Student Photo (Passport Size)</label>
+                <input type="file" id="st_photo" accept="image/*">
+            </div>
+            <div class="form-group">
+                <label>Student Full Name</label>
+                <input type="text" id="st_name" placeholder="Enter student's name">
+            </div>
+            <div class="form-group">
+                <label>Father's Name</label>
+                <input type="text" id="st_father" placeholder="Enter father's name">
+            </div>
+            <div class="form-group">
+                <label>Mother's Name</label>
+                <input type="text" id="st_mother" placeholder="Enter mother's name">
+            </div>
+            <div style="display:flex; gap:15px;">
+                <div class="form-group" style="flex:1;">
+                    <label>Class/Grade</label>
+                    <input type="text" id="st_class" placeholder="e.g. 10th">
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label>Roll No (Optional)</label>
+                    <input type="text" id="st_roll" placeholder="e.g. 101">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Aadhaar Number</label>
+                <input type="text" id="st_aadhaar" placeholder="Enter 12-digit Aadhaar No">
+            </div>
+            <div class="form-group">
+                <label>Full Address</label>
+                <input type="text" id="st_address" placeholder="Enter complete home address">
+            </div>
+            
+            <button class="submit-btn" id="submitBtn" onclick="submitForm()">Submit Admission Form</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, collection, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // Same Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBUAoXX64MTKrhMiRKd9oJPnaT0j60SPdY",
+            authDomain: "admin-panel-17e6a.firebaseapp.com",
+            databaseURL: "https://admin-panel-17e6a-default-rtdb.firebaseio.com",
+            projectId: "admin-panel-17e6a",
+            storageBucket: "admin-panel-17e6a.firebasestorage.app",
+            messagingSenderId: "519315316570",
+            appId: "1:519315316570:web:1448a0936e9a102d849d63"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Get School ID from URL (e.g. ?school=SCH-12345)
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetSchoolId = urlParams.get('school');
+
+        const overlay = document.getElementById("loading-overlay");
+        const errorScreen = document.getElementById("error-screen");
+        const mainForm = document.getElementById("main-form");
+
+        function showLoader(text) {
+            document.getElementById("loading-text").innerText = text;
+            overlay.style.display = "flex";
+        }
+        function hideLoader() { overlay.style.display = "none"; }
+
+        // 1. Verify School Link
+        async function verifySchool() {
+            showLoader("Loading School Details...");
+            if (!targetSchoolId) {
+                hideLoader(); errorScreen.style.display = "block"; return;
+            }
+            try {
+                const schoolDoc = await getDoc(doc(db, "schools", targetSchoolId));
+                if (schoolDoc.exists()) {
+                    const schoolData = schoolDoc.data();
+                    document.getElementById("schoolName").innerText = schoolData.schoolName;
+                    if(schoolData.logoUrl) {
+                        document.getElementById("schoolLogo").src = schoolData.logoUrl;
+                        document.getElementById("schoolLogo").style.display = "inline-block";
+                    }
+                    hideLoader();
+                    mainForm.style.display = "block";
+                } else {
+                    hideLoader(); errorScreen.style.display = "block";
+                }
+            } catch (error) {
+                hideLoader(); errorScreen.style.display = "block";
+            }
+        }
+
+        // Run Verification on page load
+        verifySchool();
+
+        // 2. Cloudinary Upload (Base64 Method)
+        const convertToBase64 = (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader(); reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result); reader.onerror = (e) => reject(e);
+            });
+        };
+
+        // 3. Submit Form
+        window.submitForm = async () => {
+            const name = document.getElementById("st_name").value.trim();
+            const father = document.getElementById("st_father").value.trim();
+            const mother = document.getElementById("st_mother").value.trim();
+            const cls = document.getElementById("st_class").value.trim();
+            const roll = document.getElementById("st_roll").value.trim();
+            const aadhaar = document.getElementById("st_aadhaar").value.trim();
+            const address = document.getElementById("st_address").value.trim();
+            const photoFile = document.getElementById("st_photo").files[0];
+
+            if(!name || !father || !mother || !cls || !aadhaar || !address) {
+                return alert("Please fill all the mandatory fields!");
+            }
+
+            showLoader("Uploading Photo & Submitting...");
+
+            let photoUrl = "https://via.placeholder.com/100";
+            if (photoFile) {
+                try {
+                    const base64Image = await convertToBase64(photoFile);
+                    const res = await fetch("https://api.cloudinary.com/v1_1/disgtvs6f/image/upload", {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ file: base64Image, upload_preset: "ml_default" })
+                    });
+                    const data = await res.json();
+                    if(data.secure_url) photoUrl = data.secure_url;
+                } catch (e) { console.error("Upload error", e); }
+            }
+
+            try {
+                // Save to Firebase under the correct School ID
+                const newStudentRef = doc(collection(db, "students"));
+                await setDoc(newStudentRef, {
+                    schoolId: targetSchoolId,
+                    name: name,
+                    fatherName: father,
+                    motherName: mother,
+                    class: cls,
+                    roll: roll,
+                    aadhaar: aadhaar,
+                    address: address,
+                    photoUrl: photoUrl,
+                    status: "Pending", // Important: It goes to Pending Approvals
+                    createdAt: serverTimestamp()
+                });
+
+                hideLoader();
+                mainForm.style.display = "none";
+                document.getElementById("success-screen").style.display = "block";
+
+            } catch (error) {
+                hideLoader();
+                alert("Submission Failed: " + error.message);
+            }
+        };
+    </script>
+</body>
+</html>
