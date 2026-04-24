@@ -29,35 +29,41 @@
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #18bc9c; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        #error-screen, #success-screen { display: none; text-align: center; padding: 40px 20px; }
-        #error-screen i { font-size: 50px; color: #e74c3c; margin-bottom: 20px; }
-        #success-screen i { font-size: 50px; color: #18bc9c; margin-bottom: 20px; }
-        h2 { color: #2c3e50; margin-bottom: 10px; }
-        p { color: #7f8c8d; line-height: 1.5; }
+        .screen-box { display: none; text-align: center; padding: 40px 20px; }
+        .screen-box i { font-size: 50px; margin-bottom: 20px; }
+        .screen-box h2 { color: #2c3e50; margin-bottom: 10px; }
+        .screen-box p { color: #7f8c8d; line-height: 1.5; }
     </style>
 </head>
 <body>
 
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <h3 id="loading-text" style="color:#2c3e50;">Loading School Details...</h3>
+        <h3 id="loading-text" style="color:#2c3e50;">Loading Details...</h3>
     </div>
 
-    <!-- Error Screen (If link is invalid) -->
-    <div class="form-container" id="error-screen">
-        <i class="fas fa-exclamation-triangle"></i>
+    <!-- Error Screen -->
+    <div class="form-container screen-box" id="error-screen">
+        <i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i>
         <h2>Invalid Link</h2>
         <p>This registration link is invalid or expired. Please ask your school to share a valid link.</p>
     </div>
 
-    <!-- Success Screen (After form submission) -->
-    <div class="form-container" id="success-screen">
-        <i class="fas fa-check-circle"></i>
+    <!-- Closed Screen (New feature) -->
+    <div class="form-container screen-box" id="closed-screen">
+        <i class="fas fa-door-closed" style="color: #e67e22;"></i>
+        <h2>Admissions Closed</h2>
+        <p>Sorry, the admission window for this school is currently closed. Please contact the administration.</p>
+    </div>
+
+    <!-- Success Screen -->
+    <div class="form-container screen-box" id="success-screen">
+        <i class="fas fa-check-circle" style="color: #18bc9c;"></i>
         <h2>Registration Successful!</h2>
         <p>Your details have been submitted. Your admission is pending Chairman's approval.</p>
     </div>
 
-    <!-- Main Registration Form -->
+    <!-- Main Form -->
     <div class="form-container" id="main-form" style="display: none;">
         <div class="school-header">
             <img src="" id="schoolLogo" class="school-logo" style="display: none;">
@@ -66,42 +72,18 @@
         </div>
 
         <div class="form-body">
-            <div class="form-group">
-                <label>Student Photo (Passport Size)</label>
-                <input type="file" id="st_photo" accept="image/*">
-            </div>
-            <div class="form-group">
-                <label>Student Full Name</label>
-                <input type="text" id="st_name" placeholder="Enter student's name">
-            </div>
-            <div class="form-group">
-                <label>Father's Name</label>
-                <input type="text" id="st_father" placeholder="Enter father's name">
-            </div>
-            <div class="form-group">
-                <label>Mother's Name</label>
-                <input type="text" id="st_mother" placeholder="Enter mother's name">
-            </div>
+            <div class="form-group"><label>Student Photo</label><input type="file" id="st_photo" accept="image/*"></div>
+            <div class="form-group"><label>Student Full Name</label><input type="text" id="st_name" placeholder="Enter student's name"></div>
+            <div class="form-group"><label>Father's Name</label><input type="text" id="st_father" placeholder="Enter father's name"></div>
+            <div class="form-group"><label>Mother's Name</label><input type="text" id="st_mother" placeholder="Enter mother's name"></div>
             <div style="display:flex; gap:15px;">
-                <div class="form-group" style="flex:1;">
-                    <label>Class/Grade</label>
-                    <input type="text" id="st_class" placeholder="e.g. 10th">
-                </div>
-                <div class="form-group" style="flex:1;">
-                    <label>Roll No (Optional)</label>
-                    <input type="text" id="st_roll" placeholder="e.g. 101">
-                </div>
+                <div class="form-group" style="flex:1;"><label>Class</label><input type="text" id="st_class"></div>
+                <div class="form-group" style="flex:1;"><label>Roll No</label><input type="text" id="st_roll"></div>
             </div>
-            <div class="form-group">
-                <label>Aadhaar Number</label>
-                <input type="text" id="st_aadhaar" placeholder="Enter 12-digit Aadhaar No">
-            </div>
-            <div class="form-group">
-                <label>Full Address</label>
-                <input type="text" id="st_address" placeholder="Enter complete home address">
-            </div>
+            <div class="form-group"><label>Aadhaar Number</label><input type="text" id="st_aadhaar"></div>
+            <div class="form-group"><label>Full Address</label><input type="text" id="st_address"></div>
             
-            <button class="submit-btn" id="submitBtn" onclick="submitForm()">Submit Admission Form</button>
+            <button class="submit-btn" onclick="submitForm()">Submit Admission Form</button>
         </div>
     </div>
 
@@ -109,7 +91,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, doc, getDoc, collection, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Same Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyBUAoXX64MTKrhMiRKd9oJPnaT0j60SPdY",
             authDomain: "admin-panel-17e6a.firebaseapp.com",
@@ -119,61 +100,50 @@
             messagingSenderId: "519315316570",
             appId: "1:519315316570:web:1448a0936e9a102d849d63"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Get School ID from URL (e.g. ?school=SCH-12345)
         const urlParams = new URLSearchParams(window.location.search);
         const targetSchoolId = urlParams.get('school');
-
         const overlay = document.getElementById("loading-overlay");
-        const errorScreen = document.getElementById("error-screen");
-        const mainForm = document.getElementById("main-form");
 
-        function showLoader(text) {
-            document.getElementById("loading-text").innerText = text;
-            overlay.style.display = "flex";
-        }
+        function showLoader(text) { document.getElementById("loading-text").innerText = text; overlay.style.display = "flex"; }
         function hideLoader() { overlay.style.display = "none"; }
 
-        // 1. Verify School Link
+        // 1. Verify Link & Check Admission Status
         async function verifySchool() {
             showLoader("Loading School Details...");
-            if (!targetSchoolId) {
-                hideLoader(); errorScreen.style.display = "block"; return;
-            }
+            if (!targetSchoolId) { hideLoader(); document.getElementById("error-screen").style.display = "block"; return; }
             try {
                 const schoolDoc = await getDoc(doc(db, "schools", targetSchoolId));
                 if (schoolDoc.exists()) {
                     const schoolData = schoolDoc.data();
+                    
+                    // NEW CHECK: Is admission open?
+                    if(schoolData.admissionOpen === false) {
+                        hideLoader();
+                        document.getElementById("closed-screen").style.display = "block";
+                        return;
+                    }
+
                     document.getElementById("schoolName").innerText = schoolData.schoolName;
                     if(schoolData.logoUrl) {
                         document.getElementById("schoolLogo").src = schoolData.logoUrl;
                         document.getElementById("schoolLogo").style.display = "inline-block";
                     }
-                    hideLoader();
-                    mainForm.style.display = "block";
-                } else {
-                    hideLoader(); errorScreen.style.display = "block";
-                }
-            } catch (error) {
-                hideLoader(); errorScreen.style.display = "block";
-            }
+                    hideLoader(); document.getElementById("main-form").style.display = "block";
+                } else { hideLoader(); document.getElementById("error-screen").style.display = "block"; }
+            } catch (e) { hideLoader(); document.getElementById("error-screen").style.display = "block"; }
         }
-
-        // Run Verification on page load
         verifySchool();
 
-        // 2. Cloudinary Upload (Base64 Method)
-        const convertToBase64 = (file) => {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader(); reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result); reader.onerror = (e) => reject(e);
-            });
-        };
+        // 2. Base64 Upload
+        const convertToBase64 = (file) => new Promise((resolve, reject) => {
+            const reader = new FileReader(); reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result); reader.onerror = (e) => reject(e);
+        });
 
-        // 3. Submit Form
+        // 3. Submit
         window.submitForm = async () => {
             const name = document.getElementById("st_name").value.trim();
             const father = document.getElementById("st_father").value.trim();
@@ -184,12 +154,9 @@
             const address = document.getElementById("st_address").value.trim();
             const photoFile = document.getElementById("st_photo").files[0];
 
-            if(!name || !father || !mother || !cls || !aadhaar || !address) {
-                return alert("Please fill all the mandatory fields!");
-            }
+            if(!name || !father || !mother || !cls || !aadhaar || !address) return alert("Please fill all mandatory fields!");
 
-            showLoader("Uploading Photo & Submitting...");
-
+            showLoader("Uploading Photo...");
             let photoUrl = "https://via.placeholder.com/100";
             if (photoFile) {
                 try {
@@ -200,35 +167,18 @@
                     });
                     const data = await res.json();
                     if(data.secure_url) photoUrl = data.secure_url;
-                } catch (e) { console.error("Upload error", e); }
+                } catch (e) {}
             }
 
+            showLoader("Submitting Form...");
             try {
-                // Save to Firebase under the correct School ID
-                const newStudentRef = doc(collection(db, "students"));
-                await setDoc(newStudentRef, {
-                    schoolId: targetSchoolId,
-                    name: name,
-                    fatherName: father,
-                    motherName: mother,
-                    class: cls,
-                    roll: roll,
-                    aadhaar: aadhaar,
-                    address: address,
-                    photoUrl: photoUrl,
-                    status: "Pending", // Important: It goes to Pending Approvals
-                    createdAt: serverTimestamp()
+                await setDoc(doc(collection(db, "students")), {
+                    schoolId: targetSchoolId, name, fatherName: father, motherName: mother, class: cls, roll, aadhaar, address, photoUrl,
+                    status: "Pending", createdAt: serverTimestamp()
                 });
-
-                hideLoader();
-                mainForm.style.display = "none";
-                document.getElementById("success-screen").style.display = "block";
-
-            } catch (error) {
-                hideLoader();
-                alert("Submission Failed: " + error.message);
-            }
+                hideLoader(); document.getElementById("main-form").style.display = "none"; document.getElementById("success-screen").style.display = "block";
+            } catch (e) { hideLoader(); alert("Submission Failed."); }
         };
     </script>
 </body>
-</html>
+</html>                    
