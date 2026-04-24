@@ -1,0 +1,13 @@
+window.copyRegistrationLink = () => {
+            // Yahan par apni LIVE WEBSITE ka link daalein jahan aapne register.html host kiya hai.
+            // Example ke liye maine 'yourschoolapp.com' likha hai, isko badal lena
+            const liveDomain = "https://yourschoolapp.com"; 
+            
+            const link = `${liveDomain}/register.html?school=${currentSchoolId}`;
+            
+            navigator.clipboard.writeText(link).then(() => {
+                alert("✅ Registration Link Copied Successfully!\n\nShare this link in your WhatsApp Groups:\n" + link);
+            }).catch(e => { 
+                prompt("Copy this link manually:", link); 
+            });
+        };
