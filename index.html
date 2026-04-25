@@ -12,13 +12,13 @@
         .form-container { background: white; width: 100%; max-width: 500px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; margin-top: 20px; }
         
         .school-header { background: #2c3e50; color: white; padding: 30px 20px; text-align: center; }
-        .school-logo { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #18bc9c; margin-bottom: 10px; background: white; }
-        .school-name { font-size: 22px; font-weight: bold; margin-bottom: 5px; }
-        .form-title { font-size: 14px; color: #18bc9c; text-transform: uppercase; letter-spacing: 1px; }
+        .school-logo { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid white; margin-bottom: 10px; background: white; box-shadow: 0 4px 8px rgba(0,0,0,0.2);}
+        .school-name { font-size: 22px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase;}
+        .form-title { font-size: 14px; color: #f1c40f; text-transform: uppercase; letter-spacing: 1px; font-weight: bold;}
 
         .form-body { padding: 30px 20px; }
         .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; color: #34495e; font-weight: 600; font-size: 14px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #34495e; font-weight: 600; font-size: 13px; }
         .form-group input { width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-size: 15px; color: #2d3748; transition: 0.3s; }
         .form-group input:focus { border-color: #18bc9c; box-shadow: 0 0 0 3px rgba(24, 188, 156, 0.1); }
         
@@ -32,7 +32,11 @@
         .screen-box { display: none; text-align: center; padding: 40px 20px; }
         .screen-box i { font-size: 50px; margin-bottom: 20px; }
         .screen-box h2 { color: #2c3e50; margin-bottom: 10px; }
-        .screen-box p { color: #7f8c8d; line-height: 1.5; }
+        .screen-box p { color: #7f8c8d; line-height: 1.5; margin-bottom: 20px;}
+        
+        .search-box { display: flex; gap: 10px; margin-top: 20px; }
+        .search-box input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px;}
+        .search-box button { background: #2c3e50; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;}
     </style>
 </head>
 <body>
@@ -42,28 +46,45 @@
         <h3 id="loading-text" style="color:#2c3e50;">Loading Details...</h3>
     </div>
 
-    <!-- Error Screen -->
-    <div class="form-container screen-box" id="error-screen">
-        <i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i>
-        <h2>Invalid Link</h2>
-        <p>This registration link is invalid or expired. Please ask your school to share a valid link.</p>
+    <!-- 1. LANDING SCREEN -->
+    <div class="form-container screen-box" id="landing-screen">
+        <i class="fas fa-school" style="color: #3498db;"></i>
+        <h2>Welcome to Student Portal</h2>
+        <p>Please enter your School Code to open the admission form.</p>
+        <div class="search-box">
+            <input type="text" id="manual_school_id" placeholder="e.g. SCH-12345678">
+            <button onclick="openSchoolForm()">Proceed</button>
+        </div>
     </div>
 
-    <!-- Closed Screen -->
+    <!-- 2. ERROR SCREEN -->
+    <div class="form-container screen-box" id="error-screen">
+        <i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i>
+        <h2>Invalid School Link</h2>
+        <p>We couldn't find a school with this ID. Please check the link.</p>
+        <button class="submit-btn" style="background:#2c3e50; width:auto;" onclick="window.location.href='index.html'">Go Back</button>
+    </div>
+
+    <!-- 3. CLOSED SCREEN -->
     <div class="form-container screen-box" id="closed-screen">
         <i class="fas fa-door-closed" style="color: #e67e22;"></i>
         <h2>Admissions Closed</h2>
-        <p>Sorry, the admission window for this school is currently closed. Please contact the administration.</p>
+        <p>Sorry, the admission window for this school is currently closed.</p>
     </div>
 
-    <!-- Success Screen -->
+    <!-- 4. SUCCESS SCREEN -->
     <div class="form-container screen-box" id="success-screen">
         <i class="fas fa-check-circle" style="color: #18bc9c;"></i>
         <h2>Registration Successful!</h2>
-        <p>Your details have been submitted. Your admission is pending Chairman's approval. Please remember your mobile number and password to login to the app later.</p>
+        <p>Your details have been submitted for approval.</p>
+        <div style="background: #e8f8f5; padding: 15px; border-radius: 8px; border: 1px solid #18bc9c; text-align:left;">
+            <strong style="color: #18bc9c;">🔔 Save Your App Login Details:</strong><br><br>
+            <span style="font-size: 14px; color:#2c3e50;">Mobile No: <b id="show_mobile"></b></span><br>
+            <span style="font-size: 14px; color:#2c3e50;">Password: <b id="show_pass" style="color:#e74c3c;"></b></span>
+        </div>
     </div>
 
-    <!-- Main Form -->
+    <!-- 5. MAIN FORM SCREEN -->
     <div class="form-container" id="main-form" style="display: none;">
         <div class="school-header" id="school-header-bg">
             <img src="" id="schoolLogo" class="school-logo" style="display: none;">
@@ -72,28 +93,25 @@
         </div>
 
         <div class="form-body">
-            <div class="form-group"><label>Student Photo</label><input type="file" id="st_photo" accept="image/*"></div>
+            <div class="form-group"><label>Student Photo (Passport Size)</label><input type="file" id="st_photo" accept="image/*"></div>
             <div class="form-group"><label>Student Full Name</label><input type="text" id="st_name" placeholder="Enter student's name"></div>
             <div class="form-group"><label>Father's Name</label><input type="text" id="st_father" placeholder="Enter father's name"></div>
             <div class="form-group"><label>Mother's Name</label><input type="text" id="st_mother" placeholder="Enter mother's name"></div>
+            <div class="form-group"><label>Family Mobile Number (Will be used for App Login)</label><input type="tel" id="st_mobile" placeholder="Enter active mobile number"></div>
             
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed #cbd5e1;">
-                <p style="font-size:12px; color:#e74c3c; font-weight:bold; margin-bottom:10px;">APP LOGIN CREDENTIALS</p>
-                <div class="form-group"><label>Family Mobile Number</label><input type="text" id="st_mobile" placeholder="This will be your App Login ID"></div>
-                <div class="form-group"><label>Create App Password</label><input type="password" id="st_app_pass" placeholder="Create a password for the app"></div>
-            </div>
-
             <div style="display:flex; gap:15px;">
                 <div class="form-group" style="flex:1;"><label>Class (e.g. 10th)</label><input type="text" id="st_class"></div>
                 <div class="form-group" style="flex:1;"><label>Roll No (Optional)</label><input type="text" id="st_roll"></div>
             </div>
-            <div class="form-group"><label>Aadhaar Number</label><input type="text" id="st_aadhaar"></div>
-            <div class="form-group"><label>Full Address</label><input type="text" id="st_address"></div>
+
+            <div class="form-group"><label>Aadhaar Number (Optional)</label><input type="text" id="st_aadhaar" placeholder="Enter 12-digit Aadhaar No"></div>
+            <div class="form-group"><label>Full Address</label><input type="text" id="st_address" placeholder="Enter complete home address"></div>
             
-            <button class="submit-btn" onclick="submitForm()">Submit Admission Form</button>
+            <button class="submit-btn" id="submitBtn" onclick="submitForm()">Submit Admission Form</button>
         </div>
     </div>
 
+    <!-- FIREBASE LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, doc, getDoc, collection, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -111,29 +129,31 @@
         const db = getFirestore(app);
 
         const urlParams = new URLSearchParams(window.location.search);
-        const targetSchoolId = urlParams.get('school');
+        let targetSchoolId = urlParams.get('school');
+        
         const overlay = document.getElementById("loading-overlay");
 
         function showLoader(text) { document.getElementById("loading-text").innerText = text; overlay.style.display = "flex"; }
         function hideLoader() { overlay.style.display = "none"; }
 
+        window.openSchoolForm = () => {
+            const manualId = document.getElementById("manual_school_id").value.trim();
+            if(manualId) window.location.href = "?school=" + manualId;
+            else alert("Please enter a valid School Code.");
+        };
+
         async function verifySchool() {
+            if (!targetSchoolId) { document.getElementById("landing-screen").style.display = "block"; return; }
+            
             showLoader("Loading School Details...");
-            if (!targetSchoolId) { hideLoader(); document.getElementById("error-screen").style.display = "block"; return; }
             try {
                 const schoolDoc = await getDoc(doc(db, "schools", targetSchoolId));
                 if (schoolDoc.exists()) {
                     const schoolData = schoolDoc.data();
-                    
                     if(schoolData.admissionOpen === false) {
                         hideLoader(); document.getElementById("closed-screen").style.display = "block"; return;
                     }
-
                     document.getElementById("schoolName").innerText = schoolData.schoolName;
-                    
-                    if(schoolData.themeColor) {
-                        document.getElementById("school-header-bg").style.background = schoolData.themeColor;
-                    }
                     if(schoolData.logoUrl) {
                         document.getElementById("schoolLogo").src = schoolData.logoUrl;
                         document.getElementById("schoolLogo").style.display = "inline-block";
@@ -142,7 +162,7 @@
                 } else { hideLoader(); document.getElementById("error-screen").style.display = "block"; }
             } catch (e) { hideLoader(); document.getElementById("error-screen").style.display = "block"; }
         }
-        verifySchool();
+        verifySchool(); 
 
         const convertToBase64 = (file) => new Promise((resolve, reject) => {
             const reader = new FileReader(); reader.readAsDataURL(file);
@@ -154,16 +174,22 @@
             const father = document.getElementById("st_father").value.trim();
             const mother = document.getElementById("st_mother").value.trim();
             const mobile = document.getElementById("st_mobile").value.trim();
-            const appPass = document.getElementById("st_app_pass").value.trim();
             const cls = document.getElementById("st_class").value.trim();
             const roll = document.getElementById("st_roll").value.trim();
             const aadhaar = document.getElementById("st_aadhaar").value.trim();
             const address = document.getElementById("st_address").value.trim();
             const photoFile = document.getElementById("st_photo").files[0];
 
-            if(!name || !father || !mobile || !appPass || !cls || !address) return alert("Please fill all mandatory fields (Name, Father, Mobile, Password, Class, Address)!");
+            if(!name || !father || !mother || !mobile || !cls || !address) {
+                return alert("Please fill all mandatory fields!");
+            }
 
-            showLoader("Uploading Photo...");
+            // AUTO PASSWORD GENERATION LOGIC
+            let rawName = name.replace(/\s+/g, '').toUpperCase();
+            let appPass = (rawName.length >= 4 ? rawName.substring(0, 4) : rawName) + "@123";
+
+            showLoader("Uploading Photo & Securing Data...");
+
             let photoUrl = "https://via.placeholder.com/100";
             if (photoFile) {
                 try {
@@ -174,17 +200,29 @@
                     });
                     const data = await res.json();
                     if(data.secure_url) photoUrl = data.secure_url;
-                } catch (e) {}
+                } catch (e) { console.error(e); }
             }
 
-            showLoader("Submitting Form...");
             try {
-                await setDoc(doc(collection(db, "students")), {
-                    schoolId: targetSchoolId, name, fatherName: father, motherName: mother, mobile, appPassword: appPass, class: cls, roll, aadhaar, address, photoUrl,
-                    status: "Pending", createdAt: serverTimestamp()
+                const newStudentRef = doc(collection(db, "students"));
+                await setDoc(newStudentRef, {
+                    schoolId: targetSchoolId,
+                    name: name, fatherName: father, motherName: mother, mobile: mobile,
+                    appPassword: appPass, class: cls, roll: roll, aadhaar: aadhaar,
+                    address: address, photoUrl: photoUrl, status: "Pending", createdAt: serverTimestamp()
                 });
-                hideLoader(); document.getElementById("main-form").style.display = "none"; document.getElementById("success-screen").style.display = "block";
-            } catch (e) { hideLoader(); alert("Submission Failed."); }
+
+                hideLoader(); 
+                document.getElementById("main-form").style.display = "none"; 
+                
+                // Show Generated Password to Student
+                document.getElementById("show_mobile").innerText = mobile;
+                document.getElementById("show_pass").innerText = appPass;
+                document.getElementById("success-screen").style.display = "block";
+
+            } catch (error) {
+                hideLoader(); alert("Submission Failed: " + error.message);
+            }
         };
     </script>
 </body>
